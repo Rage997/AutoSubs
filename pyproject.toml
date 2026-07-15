@@ -1,0 +1,14 @@
+[project]
+name = "autosubs"
+version = "0.1.0"
+description = "Automatic subtitle (.srt) generator CLI using local Whisper speech-to-text"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["faster-whisper>=1.1.0"]
+
+[project.scripts]
+autosubs = "autosubs.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
