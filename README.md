@@ -11,16 +11,34 @@ Features:
 - Batch / recursive directory input.
 - Cross-platform: CPU int8 on macOS (Apple Silicon), CUDA on Linux/NVIDIA (untested but should work).
 
-## Install (using uv)
+## Try it without installing
+
+With [uv](https://docs.astral.sh/uv/), you can run it once without installing
+anything permanently:
 
 ```sh
-uv sync
+uvx --from autosubs-whisper autosubs VIDEO [VIDEO ...]
 ```
+
+`uvx` fetches the package into a temporary environment, runs the `autosubs`
+command, and leaves nothing behind. (The `--from` flag is needed because the
+package is named `autosubs-whisper` (`autosubs` was already taken) while the command is `autosubs`.)
+
+## Install
+
+```sh
+uv tool install autosubs-whisper
+```
+
+This puts the `autosubs` command on your `PATH` (works on macOS, Linux, and
+Windows). `pipx install autosubs-whisper` works too.
+
+For local development from a clone, use `uv sync` and `uv run autosubs`.
 
 ## Usage
 
 ```sh
-uv run autosubs VIDEO [VIDEO ...]
+autosubs VIDEO [VIDEO ...]
 ```
 
 The first run downloads the chosen Whisper model from the Hugging Face Hub
@@ -30,13 +48,13 @@ Examples:
 
 ```sh
 # Transcribe one file -> creates video.srt beside it
-uv run autosubs talk.mp4
+autosubs talk.mp4
 
 # Recurse a directory, English translation, larger model
-uv run autosubs ./season1/ --translate --model large-v3
+autosubs ./season1/ --translate --model large-v3
 
 # Force source language, write into a separate folder, regenerate existing
-uv run autosubs clip.mkv --language ja --output-dir ./subs --overwrite
+autosubs clip.mkv --language ja --output-dir ./subs --overwrite
 ```
 
 ## Options
