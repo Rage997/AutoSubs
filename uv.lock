@@ -54,8 +54,7 @@ wheels = [
 ]
 
 [[package]]
-name = "autosubs"
-version = "0.1.0"
+name = "autosubs-whisper"
 source = { editable = "." }
 dependencies = [
     { name = "faster-whisper" },

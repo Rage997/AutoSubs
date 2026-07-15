@@ -30,6 +30,12 @@ def _decode_and_transcribe(model, audio_path, *, task, language, beam_size):
     generator is drained. On any decode failure, fall back to extracting a
     16 kHz mono WAV via system ffmpeg (if present) and retry; otherwise raise a
     clear ``RuntimeError``.
+
+    ``word_timestamps=True`` is required for correct alignment: without it
+    faster-whisper only emits coarse segment timestamps that snap to VAD-chunk
+    and 30s-window boundaries, so a subtitle's start/end can drift 10+ seconds
+    across surrounding silence. Word-level DTW alignment pins ``segment.start``
+    to the first word and ``segment.end`` to the last.
     """
     try:
         segments, info = model.transcribe(
@@ -38,6 +44,7 @@ def _decode_and_transcribe(model, audio_path, *, task, language, beam_size):
             language=language,
             beam_size=beam_size,
             vad_filter=True,
+            word_timestamps=True,
         )
         return list(segments), info
     except Exception:
@@ -64,6 +71,7 @@ def _decode_and_transcribe(model, audio_path, *, task, language, beam_size):
             language=language,
             beam_size=beam_size,
             vad_filter=True,
+            word_timestamps=True,
         )
         return list(segments), info
     finally:
