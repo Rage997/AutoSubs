@@ -80,3 +80,10 @@ By default, inputs whose target `.srt` already exists are skipped; pass
   used as a fallback for exotic codecs PyAV cannot open.
 - On macOS only the CPU backend is available (no Metal GPU support in
   CTranslate2); `int8` keeps it reasonably fast.
+- **Accuracy vs. speed**: Voice Activity Detection (VAD) is disabled by default
+  to ensure maximum accuracy. All dialogue is transcribed, including quiet speech
+  masked by music or sound effects. **This is slow**: expect approximately 1x
+  realtime or slower (a 42-minute episode may take 40-60 minutes to transcribe).
+  This prioritizes completeness over speed. If you need faster processing and can
+  accept potentially missing very quiet dialogue, you can enable VAD by editing
+  `src/autosubs/transcribe.py` to set `vad_filter=True`.

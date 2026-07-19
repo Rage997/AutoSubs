@@ -31,11 +31,21 @@ def _decode_and_transcribe(model, audio_path, *, task, language, beam_size):
     16 kHz mono WAV via system ffmpeg (if present) and retry; otherwise raise a
     clear ``RuntimeError``.
 
-    ``word_timestamps=True`` is required for correct alignment: without it
-    faster-whisper only emits coarse segment timestamps that snap to VAD-chunk
-    and 30s-window boundaries, so a subtitle's start/end can drift 10+ seconds
-    across surrounding silence. Word-level DTW alignment pins ``segment.start``
-    to the first word and ``segment.end`` to the last.
+    Timestamp and transcription accuracy relies on:
+      - word_timestamps=True: pins segment.start/.end to first/last word via DTW
+        instead of coarse 30s-window boundaries (can drift 10+ seconds otherwise).
+      - condition_on_previous_text=False: prevents decoder from feeding prior text
+        as a prompt, reducing repetition and phantom transcriptions.
+      - hallucination_silence_threshold=2.0: drops anomalous segments surrounded
+        by >2s silence, preventing hallucinated words from appearing seconds before
+        the actual line.
+      - vad_filter=False: Voice Activity Detection is disabled for maximum accuracy.
+        All audio is processed by Whisper, ensuring quiet dialogue, overlapping speech,
+        and speech masked by music/sound effects is captured. This is SLOW: expect
+        approximately 1x realtime or slower (a 42-minute episode may take 40-60 minutes).
+        For faster processing (~10x realtime) at the cost of potentially missing quiet
+        dialogue, you can enable VAD by setting vad_filter=True and vad_parameters with
+        appropriate thresholds.
     """
     try:
         segments, info = model.transcribe(
@@ -43,8 +53,10 @@ def _decode_and_transcribe(model, audio_path, *, task, language, beam_size):
             task=task,
             language=language,
             beam_size=beam_size,
-            vad_filter=True,
+            vad_filter=False,
             word_timestamps=True,
+            condition_on_previous_text=False,
+            hallucination_silence_threshold=2.0,
         )
         return list(segments), info
     except Exception:
@@ -70,8 +82,10 @@ def _decode_and_transcribe(model, audio_path, *, task, language, beam_size):
             task=task,
             language=language,
             beam_size=beam_size,
-            vad_filter=True,
+            vad_filter=False,
             word_timestamps=True,
+            condition_on_previous_text=False,
+            hallucination_silence_threshold=2.0,
         )
         return list(segments), info
     finally:
